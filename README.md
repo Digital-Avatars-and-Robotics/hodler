@@ -9,7 +9,7 @@ node chainReader.js
 open another terminal inside hodler folder and run application with command:
 npm start
 
-do not mess up the order of commands - the application will not work properly without serwer running in the background in seperate terminal
+do not mess up the order of commands - the application will not work properly without server running in the background in seperate terminal
 
 youtube demo: https://youtu.be/Kt2IZECubxE
 
