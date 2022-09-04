@@ -263,7 +263,6 @@ export async function chainReaderMain(_startDate, _endDate, _contractAddress){
     const startDate = moment(_startDate);
     const endDate = moment(_endDate);
     const [startBlock, endBlock] = await dateToBlock(startDate, endDate);
-    console.log(startDate);
     //const contractAddress = "0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9";
     const contractAddress = _contractAddress;
     const txs = await getTransactions(contractAddress,startBlock,endBlock,false);
@@ -273,10 +272,8 @@ export async function chainReaderMain(_startDate, _endDate, _contractAddress){
 
 app.get('/getHodlers', async (req, res) => {
     const data = req.query;
-    console.log(data);
     
     const response = await chainReaderMain(data.startDate, data.endDate, data.contractAddress);
-    console.log(response)
     res.send({hodlers: response});
     
 })
