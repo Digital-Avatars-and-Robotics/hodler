@@ -4,7 +4,7 @@ import { createData } from '../components/Leaderboard'
 const initialState = {
     startDate: new Date(2015,6,30),
     endDate: Date(),
-    contractAddress: '0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9',
+    contractAddress: '0x1Eb7382976077f92cf25c27CC3b900a274FD0012',
     hodlers: [
     ],
     toggleButton: false
