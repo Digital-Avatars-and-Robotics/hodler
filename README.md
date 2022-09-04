@@ -35,5 +35,5 @@ We've implemented the core algorithms in node.js with usage of alchemy api to ac
 ## What's next for Hodler
 We are planning to fully deploy our application on web, so it could be accessible for any user without complex configuration and much less client-side operations. Additionally we want to improve the application by adding export leaderbord to csv function, and automaticly send transactions with rewards to holders based on user input (ex. send 10% of my ETH to best 100 hodlers by points ammount, scale reward for users by their points ammount 
 
-##Created by Minters World
+## Created by Minters World
 contact: office@mintersworld.com
