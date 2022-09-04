@@ -9,11 +9,17 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Button from '@mui/material/Button';
 
+//import { dateToBlock, getTransactions, getLeaderboard } from '../backend/chainReader';
+
+
 
 function Inputs() {
     const [state, setState] = useContext(Context);  
 
-
+    function handleClick (startDate, endDate, contractAddress) {
+        console.log("siema");
+    }
+    
     return(
         <>
             <Box
@@ -67,11 +73,7 @@ function Inputs() {
                         </LocalizationProvider>
                     </Stack>
                     <Button variant="contained" 
-                    onClick={() => {
-                        console.log(state.contractAddress)
-                        console.log(state.startDate)
-                        console.log(state.endDate)
-                    }}>
+                    onClick={handleClick}>
                         Calculate
                     </Button>
                 </Stack>

@@ -1,9 +1,12 @@
 import axios from 'axios';
 import EthDater from 'ethereum-block-by-date';
 import {ethers} from 'ethers';
+import fetch from "react-fetch";
+import moment from 'moment'
+
+import fs from 'fs';
 
 const provider = new ethers.providers.CloudflareProvider();
-
 const dater = new EthDater(
     provider // Ethers provider, required.
 );
@@ -16,96 +19,245 @@ export async function dateToBlock(startDate, endDate)
         `${startDate}`, // Date, required. Any valid moment.js value: string, milliseconds, Date() object, moment() object.
         false, // Block after, optional. Search for the nearest block before or after the given date. By default true.
         false // Refresh boundaries, optional. Recheck the latest block before request. By default false.
-    );
+    ); 
 
     let endBlock = await dater.getDate(
         `${endDate}`,
         false,
         false
-    );
+    ); 
+    return [
+        startBlock.block.toString(16),
+        endBlock.block.toString(16)];
+}
 
-    return{
-        first: startBlock,
-        second: endBlock
-    };
+let transactions = [];
+let idx = 0
+
+export async function getTransactions(contractAddress,startBlock,endBlock,pageKey){
+    let options;
+    //console.log("Iteration number: ", idx)
+    idx += 1;
+    if(pageKey){
+            //console.log("Pagekey detected: ", pageKey)
+            options = {
+            method: 'POST',
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              id: 1,
+              jsonrpc: '2.0',
+              method: 'alchemy_getAssetTransfers',
+              params: [
+                {
+                  fromBlock: `0x${startBlock}`,
+                  toBlock: `0x${endBlock}`,
+                  withMetadata: false,
+                  excludeZeroValue: false,
+                  maxCount: '0x3e8',
+                  category: ['erc721'],
+                  contractAddresses: [`${contractAddress}`],
+                  pageKey:pageKey           
+                }
+              ]
+            })
+          }
+    }
+    else{   
+            //console.log("Pagekey WAS NOT detected: ", pageKey)
+            options = {
+            method: 'POST',
+            headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              id: 1,
+              jsonrpc: '2.0',
+              method: 'alchemy_getAssetTransfers',
+              params: [
+                {
+                  fromBlock: `0x${startBlock}`,
+                  toBlock: `0x${endBlock}`,
+                  withMetadata: false,
+                  excludeZeroValue: false,
+                  maxCount: '0x3e8',
+                  category: ['erc721'],
+                  contractAddresses: [`${contractAddress}`],
+                }
+              ]
+            })
+          }
+    }
+    
+      
+      //uwaga  tukurwa nizej jest api key
+        fetch('https://eth-mainnet.alchemyapi.io/v2/_ER-hutXkuR_WSDdqYb7AaHwJCLrlYBs', options)
+        .then(response => response.json())
+        .then(response => {
+            for(let i=0; i<response.result.transfers.length; i++)
+            {
+                let tx = response.result.transfers[i];
+                let block = tx.blockNum;
+                let from = tx.from;
+                let to = tx.to;
+                let id = tx.tokenId;
+                let hash = tx.hash;
+                let transaction = {
+                    block: parseInt(tx.blockNum),
+                    from: tx.from,
+                    to: tx.to,
+                    id: parseInt(tx.tokenId)
+                }
+                transactions.push(transaction)
+            }
+            if (response.result.pageKey)
+            {
+                getTransactions(contractAddress,startBlock,endBlock,response.result.pageKey);
+            }
+
+            if (!response.result.pageKey && !(idx==0))
+            {
+                const transactonsJson = JSON.stringify(transactions);
+                
+                /*exporting to json for debugging purposes kek
+                fs.writeFile('./transactions.json', transactonsJson, err => {
+                    if (err) {
+                        console.log('Error writing file', err)
+                    } else {
+                        console.log('Successfully wrote file')
+                    }
+                })
+                */
+                getLeaderboard(transactonsJson, parseInt(`0x${startBlock}`), parseInt(`0x${endBlock}`));
+            }
+        })
+        .catch(err => console.error(err));
 }
 
 
-//get contract erc721 transactions
-export function getTransactions(contractAddress, startDate, endDate){
+export function getLeaderboard(data1, userStartDate, userEndDate) {
     
-    //convert dates to blocks
-    
-    let data = JSON.stringify({
-    "jsonrpc": "2.0",
-    "id": 0,
-    "method": "alchemy_getAssetTransfers",
-    "params": [
-    {
-        "fromBlock": `${startBlock}`,
-        "toBlock": `${endBlock}`,
-        "contractAddresses": `${contractAddress}`,
-        category: ["erc721"],
-    }
-    ]
-    });
+    //mapping (address => StakeObject)
+    let addressToPoints = new Map();
+    //array of all tokens
+    let tokens = [];
+    const data = JSON.parse(data1);
 
-    var requestOptions = {
-    method: 'post',
-    headers: { 'Content-Type': 'application/json' },
-    data: data,
-    };
+    let updatedPoints;
+    let updatedTokenVolumeCount;
 
-    const apiKey = "demo"
-    const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${apiKey}`;
-    const axiosURL = `${baseURL}`;
-
-    axios(axiosURL, requestOptions)
-    .then(response => console.log(JSON.stringify(response.data, null, 2)))
-    .catch(error => console.log(error));
-}
-
-
-export function getLeaderboard(data) {
-    
-    let hodlers = new Map();
-    let hodlersAssets = new Map();
-
-    
-    /*
-    hodlers (address => hodlerAssets)
-    hodlersAssets (tokenId => Stake)
-    Stake
-    {
-       tokenId
-       startDate
-       endDate 
-    }
-    */
     //iterate through transactions and assign each holder
-    for(let i=0; i<data.result.transfers.length; i++)
+    for(let i=0; i<data.length; i++)
     {
-        let fromAddress = data.result.transfers.from;
-        let toAddress = data.result.transfers.to;
-        let tokenId = data.result.transfers.tokenId;
-        let blockNumber = data.result.transfers.blockNum;
+        let fromAddress = data[i].from;
+        let toAddress = data[i].to;
+        let tokenId = data[i].id;
+        let blockNumber = data[i].block; 
+        
         //mint
         if(fromAddress == "0x0000000000000000000000000000000000000000")
         {
-            
-            hodlers.set(toAddress, )
+            tokens[tokenId] = {
+                tokenId: tokenId,
+                startDate: blockNumber,
+                endDate: null,
+                holderAddress: toAddress,
+            }
+        }
+        //transfer
+        else 
+        {
+            tokens[tokenId].endDate = blockNumber;
+            if(tokens[tokenId].endDate >= userStartDate)
+            {
+                if(tokens[tokenId].startDate < userStartDate) tokens[tokenId].startDate = userStartDate; 
+                tokens[tokenId].endDate = blockNumber;
+                //get user stats
+                let currStats = addressToPoints.get(fromAddress);
+                if(!currStats) //first run
+                {
+                    updatedPoints = (tokens[tokenId].endDate - tokens[tokenId].startDate) * 0.01;
+                    //update total ammount of tokens that user had in this timeframe
+                    updatedTokenVolumeCount = 1;
+                }
+                else
+                {
+                    //update points
+                    updatedPoints = currStats.points + ((tokens[tokenId].endDate - tokens[tokenId].startDate) * 0.01);
+                    //update total ammount of tokens that user had in this timeframe
+                    updatedTokenVolumeCount = currStats.tokenVolumeCount + 1;
+                }
+                //update holder hot streak
+                let updatedStreak = tokens[tokenId].endDate - tokens[tokenId].startDate;
+                if(currStats && updatedStreak < currStats.hotStreak) updatedStreak = currStats.hotStreak;
+
+                //assign new stats
+                addressToPoints.set(fromAddress, {
+                    points: updatedPoints,
+                    tokenVolumeCount: updatedTokenVolumeCount,
+                    hotStreak: updatedStreak
+                });
+
+                //set new owner of stake
+                tokens[tokenId].startDate = blockNumber;
+                tokens[tokenId].endDate = null;
+                tokens[tokenId].holderAddress = toAddress;
+            }    
         }
     }
+    //iterate through all tokens in order to set final dates for user's endDate and assign missing points
+    for(let j=0; j<tokens.length; j++)
+    {
+        if(tokens[j].endDate == null)
+        {
+            tokens[j].endDate = userEndDate;
+            //get user stats
+            let currStats = addressToPoints.get(tokens[j].holderAddress);
+            
+            if(!currStats) //first run
+            {
+                updatedPoints = (tokens[j].endDate - tokens[j].startDate) * 0.01;
+                //update total ammount of tokens that user had in this timeframe
+                updatedTokenVolumeCount = 1;
+            }
+            else
+            {
+                //update points
+                updatedPoints = currStats.points + ((tokens[j].endDate - tokens[j].startDate) * 0.01);
+                //update total ammount of tokens that user had in this timeframe
+                updatedTokenVolumeCount = currStats.tokenVolumeCount + 1;
+            }
+
+            //update holder hot streak
+            let updatedStreak = tokens[j].endDate - tokens[j].startDate;
+            if(currStats && updatedStreak < currStats.hotStreak) updatedStreak = currStats.hotStreak;
+
+            //assign new stats
+            addressToPoints.set(tokens[j].holderAddress, {
+                points: updatedPoints,
+                tokenVolumeCount: updatedTokenVolumeCount,
+                hotStreak: updatedStreak
+            });
+        }
+    }
+    let tableData = []; 
+    addressToPoints.forEach((key, value) => {
+        tableData.push({
+            id: value,
+            points: key.points,
+            tokenVolumeCount: key.tokenVolumeCount,
+            hotStreak: key.hotStreak
+        })
+    })
+
+
+    console.log(tableData);
 }
 
-
-function chainReaderMain(){
-    const [state, setState] = useContext(Context);  
-
-    //const {startBlock, endBlock} = dateToBlock("INPUTY TUTAJ POPROSZE DATY")
-
-    getTransactions(contractAddress,startBlock, endBlock);
+async function chainReaderMain(){
+    const startDate = moment(new Date(2015,6,30));
+    const endDate = moment(new Date(2022,8,4));
+    const [startBlock, endBlock] = await dateToBlock(startDate, endDate);
     
+    const contractAddress = "0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9";
+    const txs = await getTransactions(contractAddress,startBlock,endBlock,false);
 }
 
 chainReaderMain();
