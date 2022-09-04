@@ -25,7 +25,7 @@ But Hodler comes with simple solution.
 
 ## What it does
 
-Hodler is a web app simplifying process of gathering addresses of your token holders. Instead of taking snapshots or deploying staking contracts - gather leaderboard of holders based on erc-721 tokens holded for each block in specified timeframe.
+Hodler is a web app simplifying process of gathering addresses of your token holders. Instead of taking snapshots or deploying staking contracts - gather leaderboard of holders based on erc-721 tokens holded for each block in specified timeframe, the volume of NFT transfers or longest time period of holding an NFT.
 
 It gets rid of a poor UX and technical complexity of staking contracts (from a user POV), while allowing creators to reward their community, in a fun, surprising way.
 
@@ -33,4 +33,6 @@ It gets rid of a poor UX and technical complexity of staking contracts (from a u
 We've implemented the core algorithms in node.js with usage of alchemy api to access all transfer transactions inside specified smart contract. We've made such API requests based on user inputs - contract address, and a time range to consider during creating a hodlers leaderboard. We add 0.01 score point to wallet addres, for each block that he holds an NFT.
 
 ## What's next for Hodler
-We are planning to fully deploy our application on web, so it could be accessible for any user without complex configuration and much less client-side operations. 
+We are planning to fully deploy our application on web, so it could be accessible for any user without complex configuration and much less client-side operations. Additionally we want to improve the application by adding export leaderbord to csv function, and automaticly send transactions with rewards to holders based on user input (ex. send 10% of my ETH to best 100 hodlers by points ammount, scale reward for users by their points ammount 
+
+Created by Minters World
