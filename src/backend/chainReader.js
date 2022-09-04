@@ -1,8 +1,11 @@
 import axios from 'axios';
 import EthDater from 'ethereum-block-by-date';
 import {ethers} from 'ethers';
-import fetch from "react-fetch";
+import fetch from "node-fetch";
 import moment from 'moment'
+
+import React, {useContext} from 'react';
+import { Context } from '../helper/Store'
 
 import fs from 'fs';
 
@@ -88,9 +91,9 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
     
       
       //uwaga  tukurwa nizej jest api key
-        fetch('https://eth-mainnet.alchemyapi.io/v2/_ER-hutXkuR_WSDdqYb7AaHwJCLrlYBs', options)
+        return await fetch('https://eth-mainnet.alchemyapi.io/v2/_ER-hutXkuR_WSDdqYb7AaHwJCLrlYBs', options)
         .then(response => response.json())
-        .then(response => {
+        .then(async response => {
             for(let i=0; i<response.result.transfers.length; i++)
             {
                 let tx = response.result.transfers[i];
@@ -109,7 +112,8 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
             }
             if (response.result.pageKey)
             {
-                getTransactions(contractAddress,startBlock,endBlock,response.result.pageKey);
+                return await getTransactions(contractAddress,startBlock,endBlock,response.result.pageKey);
+                //console.log(ret);
             }
 
             if (!response.result.pageKey && !(idx==0))
@@ -125,7 +129,7 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
                     }
                 })
                 */
-                getLeaderboard(transactonsJson, parseInt(`0x${startBlock}`), parseInt(`0x${endBlock}`));
+                return getLeaderboard(transactonsJson, parseInt(`0x${startBlock}`), parseInt(`0x${endBlock}`));
             }
         })
         .catch(err => console.error(err));
@@ -248,16 +252,18 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
     })
 
 
-    console.log(tableData);
+    //console.log(tableData);
+    return tableData;
 }
 
-async function chainReaderMain(){
+export async function chainReaderMain(){
     const startDate = moment(new Date(2015,6,30));
     const endDate = moment(new Date(2022,8,4));
     const [startBlock, endBlock] = await dateToBlock(startDate, endDate);
     
     const contractAddress = "0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9";
     const txs = await getTransactions(contractAddress,startBlock,endBlock,false);
+    //console.log("GIIIIIITTT", txs, "GIIIIT")
 }
 
 chainReaderMain();
