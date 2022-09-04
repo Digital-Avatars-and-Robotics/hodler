@@ -93,7 +93,7 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
     }
     
       
-      //uwaga  tukurwa nizej jest api key
+        //yes, heres our api key. Don't care, wont use it anymore - have fun, but pls use it just for hodler testing
         return await fetch('https://eth-mainnet.alchemyapi.io/v2/_ER-hutXkuR_WSDdqYb7AaHwJCLrlYBs', options)
         .then(response => response.json())
         .then(async response => {
@@ -266,7 +266,6 @@ export async function chainReaderMain(_startDate, _endDate, _contractAddress){
     //const contractAddress = "0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9";
     const contractAddress = _contractAddress;
     const txs = await getTransactions(contractAddress,startBlock,endBlock,false);
-    //console.log("GIIIIIITTT", txs, "GIIIIT")
     return txs;
 }
 
