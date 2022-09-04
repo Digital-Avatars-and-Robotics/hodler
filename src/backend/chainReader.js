@@ -2,10 +2,13 @@ import axios from 'axios';
 import EthDater from 'ethereum-block-by-date';
 import {ethers} from 'ethers';
 import fetch from "node-fetch";
+import express from 'express'
 import moment from 'moment'
+import cors from 'cors'
 
-import React, {useContext} from 'react';
-import { Context } from '../helper/Store'
+const app = express();
+app.use(cors());
+const port = 8000
 
 import fs from 'fs';
 
@@ -191,7 +194,7 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
                 //update holder hot streak
                 let updatedStreak = tokens[tokenId].endDate - tokens[tokenId].startDate;
                 if(currStats && updatedStreak < currStats.hotStreak) updatedStreak = currStats.hotStreak;
-
+                
                 //assign new stats
                 addressToPoints.set(fromAddress, {
                     points: updatedPoints,
@@ -256,14 +259,28 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
     return tableData;
 }
 
-export async function chainReaderMain(){
-    const startDate = moment(new Date(2015,6,30));
-    const endDate = moment(new Date(2022,8,4));
+export async function chainReaderMain(_startDate, _endDate, _contractAddress){
+    const startDate = moment(_startDate);
+    const endDate = moment(_endDate);
     const [startBlock, endBlock] = await dateToBlock(startDate, endDate);
-    
-    const contractAddress = "0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9";
+    console.log(startDate);
+    //const contractAddress = "0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9";
+    const contractAddress = _contractAddress;
     const txs = await getTransactions(contractAddress,startBlock,endBlock,false);
     //console.log("GIIIIIITTT", txs, "GIIIIT")
+    return txs;
 }
 
-chainReaderMain();
+app.get('/getHodlers', async (req, res) => {
+    const data = req.query;
+    console.log(data);
+    
+    const response = await chainReaderMain(data.startDate, data.endDate, data.contractAddress);
+    console.log(response)
+    res.send({hodlers: response});
+    
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})

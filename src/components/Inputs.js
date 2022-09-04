@@ -8,18 +8,20 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Button from '@mui/material/Button';
+import axios from 'axios';
 
 //import { dateToBlock, getTransactions, getLeaderboard } from '../backend/chainReader';
-
-
 
 function Inputs() {
     const [state, setState] = useContext(Context);  
 
-    function handleClick (startDate, endDate, contractAddress) {
-        console.log("siema");
+    async function handleClick () {
+        console.log(state);
+        const res = await axios.get('http://localhost:8000/getHodlers', { params: {startDate: state.startDate, endDate: state.endDate, contractAddress: state.contractAddress}})
+        console.log(res.data);
+        setState(state => ({...state,hodlers: res.data.hodlers}))
     }
-    
+
     return(
         <>
             <Box

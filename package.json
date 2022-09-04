@@ -16,6 +16,7 @@
     "browserify-fs": "^1.0.0",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
+    "cors": "^2.8.5",
     "dayjs": "^1.11.5",
     "dotenv": "^16.0.2",
     "ethereum-block-by-date": "^1.4.5",
