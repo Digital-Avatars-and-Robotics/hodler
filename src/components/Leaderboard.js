@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import { Context } from '../helper/Store'
 
 import { DataGrid } from '@mui/x-data-grid';
@@ -17,19 +17,26 @@ export function createData(id, points, tokenVolumeCount, hotStreak) {
 export default function StickyHeadTable() {
   const [state] = useContext(Context);  
   const rows = state.hodlers;
+
+  const [pageSize, setPageSize] = useState(10);
+  
   return (
-    <div style={{ 
-      height: "579px",
-      maxHeight: "65vh",
+    <div id="tableContainer"
+      style={{ 
+      height: "590px",
+      maxHeight: "60vh",
       width: "855px", 
       maxWidth: "96vw", 
       margin: "auto",
       backgroundColor: "rgb(228, 231, 231)"}}>
+    
     <DataGrid
       rows={rows}
       columns={columns}
-      pageSize={9}
-      rowsPerPageOptions={[9]}
+      pageSize={pageSize}
+      onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+      rowsPerPageOptions={[5, 10, 20, 50, 100]}
+      pagination
     />
   </div>
   );

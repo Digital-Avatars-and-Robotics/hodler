@@ -1,8 +1,7 @@
 import React, {useState} from 'react';
-import { createData } from '../components/Leaderboard'
 
 const initialState = {
-    startDate: new Date(2015,6,30),
+    startDate: new Date(2022,6,30),
     endDate: Date(),
     contractAddress: '0x00b784c0e9dd20fc865f89d05d0ce4417efb77a9',
     hodlers: [

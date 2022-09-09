@@ -8,22 +8,38 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Button from '@mui/material/Button';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
 
-//import { dateToBlock, getTransactions, getLeaderboard } from '../backend/chainReader';
 
-function Inputs() {
+const serverURL = "http://localhost:8000"
+
+const theme = createTheme({
+    palette: {
+        mode: 'dark',
+    },
+});
+
+function Inputs(props) {
     const [state, setState] = useContext(Context);  
 
     async function handleClick () {
-        console.log(state);
-        const res = await axios.get('http://localhost:8000/getHodlers', { params: {startDate: state.startDate, endDate: state.endDate, contractAddress: state.contractAddress}})
+        document.getElementById('progressBar').style.display = 'block';
+        const res = await axios.get(`${serverURL}/getHodlers`, { params: {startDate: state.startDate, endDate: state.endDate, contractAddress: state.contractAddress}})
         console.log(res.data);
         setState(state => ({...state,hodlers: res.data.hodlers}))
+        document.getElementById('progressBar').style.display = 'none';
     }
+
+    const inputProps = {
+        multilineColor:{
+            color: 'white'
+        }
+    };
 
     return(
         <>
+            <ThemeProvider theme={theme}>
             <Box
             component="form"
             sx={{
@@ -33,10 +49,12 @@ function Inputs() {
             noValidate
             autoComplete="off"
             >
+
                 <Stack direction="column"
                 justifyContent="center"
                 alignItems="center"
                 spacing={2}>
+
                     <TextField id="outlined-basic" 
                     label="Address" 
                     variant="filled" 
@@ -51,6 +69,7 @@ function Inputs() {
                     alignItems="center"
                     spacing={2}
                     >
+
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
                             <DatePicker
                             label="from"
@@ -73,6 +92,7 @@ function Inputs() {
                             renderInput={(params) => <TextField variant="filled" {...params} />}
                             />
                         </LocalizationProvider>
+
                     </Stack>
                     <Button variant="contained" 
                     onClick={handleClick}>
@@ -80,6 +100,7 @@ function Inputs() {
                     </Button>
                 </Stack>
             </Box>
+            </ThemeProvider>
         </>
     );
 }
