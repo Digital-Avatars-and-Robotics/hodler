@@ -55,7 +55,7 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
               method: 'alchemy_getAssetTransfers',
               params: [
                 {
-                  fromBlock: `0x${startBlock}`,
+                  fromBlock: `0x0`,
                   toBlock: `0x${endBlock}`,
                   withMetadata: false,
                   excludeZeroValue: false,
@@ -79,7 +79,7 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
               method: 'alchemy_getAssetTransfers',
               params: [
                 {
-                  fromBlock: `0x${startBlock}`,
+                  fromBlock: `0x0`,
                   toBlock: `0x${endBlock}`,
                   withMetadata: false,
                   excludeZeroValue: false,
@@ -132,7 +132,8 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
                     }
                 })
                 */
-                return getLeaderboard(transactonsJson, parseInt(`0x${startBlock}`), parseInt(`0x${endBlock}`));
+                let start = Number(transactonsJson.slice(10,18));
+                return getLeaderboard(transactonsJson, start, parseInt(`0x${endBlock}`));
             }
         })
         .catch(err => console.error(err));
@@ -158,6 +159,9 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
         let tokenId = data[i].id;
         let blockNumber = data[i].block; 
         
+        //user does not care about further records
+        if(blockNumber > userEndDate) break;
+
         //mint
         if(fromAddress == "0x0000000000000000000000000000000000000000")
         {
@@ -171,49 +175,59 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
         //transfer
         else 
         {
-            tokens[tokenId].endDate = blockNumber;
-            if(tokens[tokenId].endDate >= userStartDate)
+            //eliminate situation where user selected range that entirely falls out of 
+            //transacion history for given contract
+            if(!(((userStartDate < data[0].block && userEndDate < data[0].block) || (userStartDate > data[data.length-1].block && userEndDate > data[data.length-1].block))))
             {
                 if(tokens[tokenId].startDate < userStartDate) tokens[tokenId].startDate = userStartDate; 
                 tokens[tokenId].endDate = blockNumber;
                 //get user stats
-                let currStats = addressToPoints.get(fromAddress);
-                if(!currStats) //first run
+                if(!(userStartDate > blockNumber))
                 {
-                    updatedPoints = (tokens[tokenId].endDate - tokens[tokenId].startDate) * 0.01;
-                    //update total ammount of tokens that user had in this timeframe
-                    updatedTokenVolumeCount = 1;
+                    let currStats = addressToPoints.get(fromAddress);
+                    if(!currStats) //first run
+                    {
+                        updatedPoints = (tokens[tokenId].endDate - tokens[tokenId].startDate) * 0.01;
+                        //update total ammount of tokens that user had in this timeframe
+                        updatedTokenVolumeCount = 1;
+                    }
+                    else
+                    {
+                        //update points
+                        updatedPoints = currStats.points + ((tokens[tokenId].endDate - tokens[tokenId].startDate) * 0.01);
+                        //update total ammount of tokens that user had in this timeframe
+                        updatedTokenVolumeCount = currStats.tokenVolumeCount + 1;
+                    }
+                    //update holder hot streak
+                    let updatedStreak = tokens[tokenId].endDate - tokens[tokenId].startDate;
+                    if(currStats && updatedStreak < currStats.hotStreak) updatedStreak = currStats.hotStreak;
+                    
+                    //assign new stats
+                    addressToPoints.set(fromAddress, {
+                        points: updatedPoints,
+                        tokenVolumeCount: updatedTokenVolumeCount,
+                        hotStreak: updatedStreak
+                    });
                 }
-                else
-                {
-                    //update points
-                    updatedPoints = currStats.points + ((tokens[tokenId].endDate - tokens[tokenId].startDate) * 0.01);
-                    //update total ammount of tokens that user had in this timeframe
-                    updatedTokenVolumeCount = currStats.tokenVolumeCount + 1;
-                }
-                //update holder hot streak
-                let updatedStreak = tokens[tokenId].endDate - tokens[tokenId].startDate;
-                if(currStats && updatedStreak < currStats.hotStreak) updatedStreak = currStats.hotStreak;
                 
-                //assign new stats
-                addressToPoints.set(fromAddress, {
-                    points: updatedPoints,
-                    tokenVolumeCount: updatedTokenVolumeCount,
-                    hotStreak: updatedStreak
-                });
-
-                //set new owner of stake
-                tokens[tokenId].startDate = blockNumber;
-                tokens[tokenId].endDate = null;
-                tokens[tokenId].holderAddress = toAddress;
             }    
+            
+
+            //set new owner of stake
+            tokens[tokenId].startDate = blockNumber;
+            tokens[tokenId].endDate = null;
+            tokens[tokenId].holderAddress = toAddress;
+
         }
     }
+    
     //iterate through all tokens in order to set final dates for user's endDate and assign missing points
     for(let j=0; j<tokens.length; j++)
     {
+        //console.log(tokens[j]);
         if(tokens[j].endDate == null)
         {
+            if(tokens[j].startDate < userStartDate) tokens[j].startDate = userStartDate;
             tokens[j].endDate = userEndDate;
             //get user stats
             let currStats = addressToPoints.get(tokens[j].holderAddress);
@@ -246,6 +260,8 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
     }
     let tableData = []; 
     addressToPoints.forEach((key, value) => {
+        key.points = Math.round(key.points * 100) / 100
+        key.hotStreak = Math.round(((key.hotStreak * 14)/60/60/24 * 100))/100 
         tableData.push({
             id: value,
             points: key.points,
@@ -254,8 +270,6 @@ export function getLeaderboard(data1, userStartDate, userEndDate) {
         })
     })
 
-
-    //console.log(tableData);
     return tableData;
 }
 
