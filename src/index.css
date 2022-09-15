@@ -5,16 +5,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-image:
-  -webkit-linear-gradient(top, rgba(0, 0, 0, 0.9) 0%,
-      rgba(0, 0, 0, 0) 10%,
-      rgba(0, 0, 0, 0) 65%,
-      rgba(0, 0, 0, 1) 95%),
-  -webkit-linear-gradient(left, rgba(0, 0, 0, 0.9) 5%,
-      rgba(0, 0, 0, 0) 25%,
-      rgba(0, 0, 0, 0) 80%,
-      rgba(0, 0, 0, 0.9) 92%),
-  url(./images/animate.gif);
+  background-color: rgba(0, 0, 0, 0.788);
   min-height: 100vh;
   width: 100vw;
   overflow-x: hidden;

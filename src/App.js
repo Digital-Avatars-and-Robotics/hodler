@@ -26,11 +26,12 @@ function App() {
         <Leaderboard/>
       
         <a href="https://mintersworld.com"
+        target="_blank"
         style={{
         margin: "0,auto,0,auto",
         textAlign: "center",
         maxHeight: "5vh",
-        color: "rgb(228, 231, 231)"
+        color: "rgb(228, 231, 231)",
         }}>
           <h3 style={{margin: 0}}>Hodler</h3>
           by Mintersworld
