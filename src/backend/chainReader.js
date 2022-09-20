@@ -1,4 +1,3 @@
-import axios from 'axios';
 import EthDater from 'ethereum-block-by-date';
 import {ethers} from 'ethers';
 import fetch from "node-fetch";
@@ -10,7 +9,6 @@ const app = express();
 app.use(cors());
 const port = 8000
 
-import fs from 'fs';
 
 const provider = new ethers.providers.CloudflareProvider();
 const dater = new EthDater(
@@ -94,7 +92,7 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
     
       
         //yes, heres our api key. Don't care, wont use it anymore - have fun, but pls use it just for hodler testing
-        return await fetch('https://eth-mainnet.alchemyapi.io/v2/_ER-hutXkuR_WSDdqYb7AaHwJCLrlYBs', options)
+        return await fetch('https://eth-mainnet.g.alchemy.com/v2/pzc0ZSMrsYIYMm-_4awwAXrJRnTh0_Tn', options)
         .then(response => response.json())
         .then(async response => {
             for(let i=0; i<response.result.transfers.length; i++)
@@ -122,6 +120,7 @@ export async function getTransactions(contractAddress,startBlock,endBlock,pageKe
             if (!response.result.pageKey && !(idx==0))
             {
                 const transactonsJson = JSON.stringify(transactions);
+                transactions=[];
                 
                 /*exporting to json for debugging purposes kek
                 fs.writeFile('./transactions.json', transactonsJson, err => {
