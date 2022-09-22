@@ -29,6 +29,12 @@ Hodler is a web app simplifying process of gathering addresses of your token hol
 
 It gets rid of a poor UX and technical complexity of staking contracts (from a user POV), while allowing creators to reward their community, in a fun, surprising way.
 
+When it comes to what those statistics actually mean:
+- wallet address => pretty self explanatory
+- points => points aquaired per held nft (0.01 point/block)
+- token volume => how many tokens "went through hands" of given holder
+- hot streak => the longest time given address held his NFT (in days)
+
 ## How we built it
 We've implemented the core algorithms in node.js with usage of alchemy api to access all transfer transactions inside specified smart contract. We've made such API requests based on user inputs - contract address, and a time range to consider during creating a hodlers leaderboard. We add 0.01 score point to wallet addres, for each block that he holds an NFT.
 
