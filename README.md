@@ -11,6 +11,8 @@ npm start
 
 do not mess up the order of commands - the application will not work properly without server running in the background in seperate terminal
 
+![Minters Leaderboard](https://user-images.githubusercontent.com/83762879/191962836-00e46876-fa6a-45d0-95e0-6b287f2a458a.gif)
+
 ## Inspiration
 We've noticed that rewarding community members, especially token holders, might be difficult for NFT collections creators. Either they have to create an nft staking contract, or gather a snapshot of specified block. Both of these approaches have their disadvantages:
 
