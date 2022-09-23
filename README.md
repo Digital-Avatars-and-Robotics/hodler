@@ -11,8 +11,6 @@ npm start
 
 do not mess up the order of commands - the application will not work properly without server running in the background in seperate terminal
 
-![Minters Leaderboard](https://user-images.githubusercontent.com/83762879/191962836-00e46876-fa6a-45d0-95e0-6b287f2a458a.gif)
-
 ## Inspiration
 We've noticed that rewarding community members, especially token holders, might be difficult for NFT collections creators. Either they have to create an nft staking contract, or gather a snapshot of specified block. Both of these approaches have their disadvantages:
 
@@ -34,6 +32,8 @@ When it comes to what those statistics actually mean:
 - points => points aquaired per held nft (0.01 point/block)
 - token volume => how many tokens "went through hands" of given holder
 - hot streak => the longest time given address held his NFT (in days)
+
+![Minters Leaderboard](https://user-images.githubusercontent.com/83762879/191962836-00e46876-fa6a-45d0-95e0-6b287f2a458a.gif)
 
 ## How we built it
 We've implemented the core algorithms in node.js with usage of alchemy api to access all transfer transactions inside specified smart contract. We've made such API requests based on user inputs - contract address, and a time range to consider during creating a hodlers leaderboard. We add 0.01 score point to wallet addres, for each block that he holds an NFT.
